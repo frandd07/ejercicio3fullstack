@@ -4,33 +4,23 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 export default function ListLibros() {
-  const [leido, setLeido] = useState([]);
   const [libros, setLibros] = useState([]);
   const [filtro, setFiltro] = useState("todos");
 
-  const librosFiltrados = libros.filter((libro) => {
-    if (filtro === "todos") {
-      return true;
-    }
-    return filtro === "leido" ? libro.leido : !libro.leido;
-  });
-
   async function fetchLibros() {
-    const response = await fetch("/api/libro");
+    const response = await fetch(`/api/libro?filtro=${filtro}`);
     const body = await response.json();
     setLibros(body);
   }
 
   useEffect(() => {
     fetchLibros();
-  }, []);
+  }, [filtro]);
 
   async function actualizarLeido(id, leido) {
-    //e.preventDefault();
-
     const response = await fetch("/api/libro", {
       method: "PUT",
-      headers: { "content-Type": "application.json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         id: id,
         update: {
@@ -46,7 +36,7 @@ export default function ListLibros() {
     if (window.confirm("¿Seguro que quieres eliminarlo permanentemente?")) {
       const response = await fetch("/api/libro", {
         method: "DELETE",
-        headers: { "Content-Type": "application-json" },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: deleteID }),
       });
 
@@ -67,7 +57,8 @@ export default function ListLibros() {
         <option value="leido">Leídos</option>
         <option value="noLeido">No Leídos</option>
       </select>
-      {librosFiltrados.map((libro) => (
+
+      {libros.map((libro) => (
         <p key={libro.id}>
           Título: {libro.titulo} || Autor: {libro.autor}
           <label>
@@ -82,7 +73,7 @@ export default function ListLibros() {
       ))}
 
       <br />
-      <Link href={"/libro/create"}> Agregar libro a la lista</Link>
+      <Link href={"/libro/create"}>Agregar libro a la lista</Link>
     </div>
   );
 }
